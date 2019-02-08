@@ -8,6 +8,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using k8s;
+using Akschaosmonkey.Repositories;
+using Microsoft.AspNetCore.JsonPatch;
+using k8s.Models;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Akschaosmonkey
 {
@@ -26,12 +31,19 @@ namespace Akschaosmonkey
             dynamic data = JsonConvert.DeserializeObject(requestBody);
             command = command ?? data?.command;
 
-            if(command == "scale")
-            {
+            // var blobstorage = new BlobStorageRepository();
 
-                var config = KubernetesClientConfiguration.BuildConfigFromConfigFile(@"C:\config.txt");
-                IKubernetes client = new Kubernetes(config);
-                log.LogInformation("Starting Request!");
+            // string kubeconfigFile = await blobstorage.GetKubeConfigFile();
+
+            // var config = KubernetesClientConfiguration.BuildConfigFromConfigFile(kubeconfigFile);
+
+            var config = KubernetesClientConfiguration.BuildConfigFromConfigFile(@"C:\config.txt");
+            IKubernetes client = new Kubernetes(config);
+
+            log.LogInformation("Kubernetes Client Configured successfully...");
+
+            if (command == "listpods")
+            {
 
                 var list = client.ListNamespacedPod("dev");
                 foreach (var item in list.Items)
@@ -44,10 +56,24 @@ namespace Akschaosmonkey
                 }
 
             }
+            else if (command == "scale")
+            {
+                var replicaset = client.ListNamespacedReplicaSet("dev").Items.First();
+
+                var podname = replicaset.Metadata.Name;
+                var podlabel = replicaset.Metadata.Labels;
+
+                log.LogInformation(podlabel.ToString());
+
+               // client.PatchNamespacedReplicaSetScale(new V1Patch(podlabel),podname, "dev");
+                client.PatchNamespacedPod(new V1Patch(podlabel), podname, "dev");
+
+                log.LogInformation("ReplicateSet of ---" + podname + " --- scaled successfully....");
+            }
 
             return command != null
-                ? (ActionResult)new OkObjectResult($"Scaling your AKS instance in 1 replica, command: {command}")
-                : new BadRequestObjectResult("ERROR: I am only accept commands (scale, delete)");
+                ? (ActionResult)new OkObjectResult($"Azure Function executed successfully, command executed: {command}")
+                : new BadRequestObjectResult("ERROR: I am only accept the commands (scale, delete, listpods)");
         }
     }
 }
