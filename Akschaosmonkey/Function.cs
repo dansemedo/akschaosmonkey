@@ -31,6 +31,8 @@ namespace Akschaosmonkey
             dynamic data = JsonConvert.DeserializeObject(requestBody);
             command = command ?? data?.command;
 
+            //Azure Blob Storage integration to keep your kubeconf file in Azure.
+
             // var blobstorage = new BlobStorageRepository();
 
             // string kubeconfigFile = await blobstorage.GetKubeConfigFile();
@@ -62,17 +64,12 @@ namespace Akschaosmonkey
 
                 var deploymentName = deployment.Metadata.Name;
 
-                //var newreplicasetvalue = new Dictionary<string, string>(replicaset.Spec.Replicas.Value)
-                //{
-                //    ["2"] = "3"
-                //};
-
                 var newreplicavalue = deployment.Spec.Replicas.Value + 1;
 
                 var patch = new JsonPatchDocument<V1ReplicaSet>();
                 patch.Replace(e => e.Spec.Replicas, newreplicavalue);
-                // client.PatchNamespacedReplicaSetScale(new V1Patch(podlabel),podname, "dev");
-               client.PatchNamespacedDeploymentScale(new V1Patch(patch), deploymentName, "dev");
+
+                client.PatchNamespacedDeploymentScale(new V1Patch(patch), deploymentName, "dev");
                 
 
                 log.LogInformation("ReplicateSet of ---" + deploymentName + " --- scaled successfully....");
