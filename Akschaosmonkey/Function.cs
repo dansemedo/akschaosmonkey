@@ -58,17 +58,24 @@ namespace Akschaosmonkey
             }
             else if (command == "scale")
             {
-                var replicaset = client.ListNamespacedReplicaSet("dev").Items.First();
+                var deployment = client.ListNamespacedDeployment("dev").Items.First();
 
-                var podname = replicaset.Metadata.Name;
-                var podlabel = replicaset.Metadata.Labels;
+                var deploymentName = deployment.Metadata.Name;
 
-                log.LogInformation(podlabel.ToString());
+                //var newreplicasetvalue = new Dictionary<string, string>(replicaset.Spec.Replicas.Value)
+                //{
+                //    ["2"] = "3"
+                //};
 
-               // client.PatchNamespacedReplicaSetScale(new V1Patch(podlabel),podname, "dev");
-                client.PatchNamespacedPod(new V1Patch(podlabel), podname, "dev");
+                var newreplicavalue = deployment.Spec.Replicas.Value + 1;
 
-                log.LogInformation("ReplicateSet of ---" + podname + " --- scaled successfully....");
+                var patch = new JsonPatchDocument<V1ReplicaSet>();
+                patch.Replace(e => e.Spec.Replicas, newreplicavalue);
+                // client.PatchNamespacedReplicaSetScale(new V1Patch(podlabel),podname, "dev");
+               client.PatchNamespacedDeploymentScale(new V1Patch(patch), deploymentName, "dev");
+                
+
+                log.LogInformation("ReplicateSet of ---" + deploymentName + " --- scaled successfully....");
             }
 
             return command != null
