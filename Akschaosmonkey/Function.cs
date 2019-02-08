@@ -33,13 +33,13 @@ namespace Akschaosmonkey
 
             //Azure Blob Storage integration to keep your kubeconf file in Azure.
 
-            // var blobstorage = new BlobStorageRepository();
+            var blobstorage = new BlobStorageRepository();
 
-            // string kubeconfigFile = await blobstorage.GetKubeConfigFile();
+            var kubeconfigFile = await blobstorage.GetKubeConfigFile();
 
-            // var config = KubernetesClientConfiguration.BuildConfigFromConfigFile(kubeconfigFile);
+            var config = KubernetesClientConfiguration.BuildConfigFromConfigFile(kubeconfigFile);
 
-            var config = KubernetesClientConfiguration.BuildConfigFromConfigFile(@"C:\config.txt");
+            // var config = KubernetesClientConfiguration.BuildConfigFromConfigFile(@"C:\config.txt");
             IKubernetes client = new Kubernetes(config);
 
             log.LogInformation("Kubernetes Client Configured successfully...");

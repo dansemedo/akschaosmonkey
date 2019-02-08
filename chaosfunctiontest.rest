@@ -4,3 +4,11 @@ content-type: application/json
 {
     "command": "scale"
 }
+
+
+POST https://akschaosmonkeyfunction.azurewebsites.net/api/akschaosmonkey?code=AziGyMEpbCHatForTZzK/sIdt893Jf6vh5kyKaR49UjD1jbZ0deslw==
+content-type: application/json
+
+{
+    "command": "scale"
+}
